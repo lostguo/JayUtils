@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"mime/multipart"
 	"path"
 	"strings"
@@ -30,21 +29,17 @@ type Uploader interface {
 
 	GetUploadProgress() float64
 
-	GetUrl() string
+	GetUrl(in string) (string, error)
 }
 
 func NewUploader(uploaderType UploaderType, config interface{}) (Uploader, error) {
 	switch uploaderType {
 	case UploaderTypeLocal:
-		return nil, errors.New("local uploader did not realize")
+		return newLocalUploader(config)
 	case UploaderTypeAliyun:
-		aliyunConfig, ok := config.(AliyunConfig)
-		if !ok {
-			return nil, fmt.Errorf("invalid config for Aliyun uploader")
-		}
-		return AliyunUploader{Config: aliyunConfig}, nil
+		return newAliyunUploader(config)
 	case UploaderTypeTencent:
-		return nil, errors.New("local uploader did not realize")
+		return newTencentUploader(config)
 	default:
 		return nil, errors.New("uploader type")
 	}

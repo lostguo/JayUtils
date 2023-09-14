@@ -1,6 +1,7 @@
 package jfile
 
 import (
+	"errors"
 	"io"
 	"mime/multipart"
 	"os"
@@ -11,7 +12,17 @@ type LocalConfig struct {
 	Host string
 }
 
-type LocalUploader struct{}
+type LocalUploader struct {
+	Config LocalConfig
+}
+
+func newLocalUploader(config interface{}) (LocalUploader, error) {
+	localConfig, ok := config.(LocalConfig)
+	if !ok {
+		return LocalUploader{}, errors.New("invalid config for Aliyun uploader")
+	}
+	return LocalUploader{Config: localConfig}, nil
+}
 
 func (a LocalUploader) UploadFile(file *multipart.FileHeader, directory string) (string, error) {
 
@@ -62,6 +73,7 @@ func (a LocalUploader) GetUploadProgress() float64 {
 	return 0
 }
 
-func (a LocalUploader) GetUrl() string {
-	return ""
+// @param in 文件地址
+func (a LocalUploader) GetUrl(in string) (string, error) {
+	return a.Config.Host + in, nil
 }
